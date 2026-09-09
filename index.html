@@ -634,6 +634,52 @@ strava12: "img/25.jpg",
 
     renderMenu();
   </script>
+
+
+const WORKER_URL = "https://jolly-breeze-7a2c.ivanopaliskij.workers.dev/";
+
+// Історія діалогу, куди на старті зашитий системний промпт із меню
+const conversationHistory = [
+  {
+    role: "system",
+    content: `Ти — віртуальний офіціант ресторану. Твоя мета: радити страви та розраховувати замовлення на компанію.
+Меню:
+- Стейк Рібай (350г, 450 грн)
+- Цезар з куркою (280г, 220 грн)
+- Піца 4 Сири (480г, 260 грн, на 2-3 людей)
+- Сет брускет (300г, 190 грн, на 2 людей)
+Норма на людину: 600-800г для вечері.`
+  }
+];
+
+async function askWaiter(userMessage) {
+  // Додаємо запит гостя в історію
+  conversationHistory.push({ role: "user", content: userMessage });
+
+  const response = await fetch(WORKER_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages: conversationHistory })
+  });
+
+  const result = await response.json();
+  const reply = result.choices[0].message.content;
+
+  // Зберігаємо відповідь асистента в пам'ять контексту
+  conversationHistory.push({ role: "assistant", content: reply });
+
+  return reply;
+}
+
+// Приклад виклику:
+// askWaiter("Нас троє, хочемо ситно повечеряти м'ясом і піцою, що взяти?")
+//   .then(reply => console.log(reply));
+
+
+
+
+
+
 <!-- Контейнер віджета офіціанта -->
 <div id="waiter-widget-root">
   <!-- Кнопка відкриття чату -->
