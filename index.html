@@ -839,13 +839,33 @@ ${formattedMenuPrompt}`
     toggleBtn.onclick = () => win.classList.toggle("waiter-hidden");
     closeBtn.onclick = () => win.classList.add("waiter-hidden");
 
-    function appendMessage(role, text) {
-      const div = document.createElement("div");
-      div.className = `waiter-msg ${role}`;
-      div.innerText = text;
-      messagesBox.appendChild(div);
-      messagesBox.scrollTop = messagesBox.scrollHeight;
-    }
+    function formatMarkdown(text) {
+  return text
+    // Заголовки ### Назва -> жирний виділений рядок
+    .replace(/^### (.*$)/gim, '<strong style="display:block; margin: 8px 0 4px; color: #631705;">$1</strong>')
+    // Жирний текст **текст** -> <strong>
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Курсив *текст* -> <em>
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Списки * пункт -> маркований пункт
+    .replace(/^\s*\*\s+(.*$)/gim, '<div style="padding-left: 10px;">• $1</div>')
+    // Переноси рядків
+    .replace(/\n/g, '<br>');
+}
+
+function appendMessage(role, text) {
+  const div = document.createElement("div");
+  div.className = `waiter-msg ${role}`;
+  
+  if (role === "assistant") {
+    div.innerHTML = formatMarkdown(text);
+  } else {
+    div.innerText = text;
+  }
+
+  messagesBox.appendChild(div);
+  messagesBox.scrollTop = messagesBox.scrollHeight;
+}
 
     async function handleSendMessage(userText) {
       if (!userText.trim()) return;
